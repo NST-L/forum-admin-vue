@@ -64,8 +64,10 @@ export default {
 .app-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
+
 
 .main-content {
   flex: 1;
@@ -93,7 +95,4 @@ export default {
   }
 }
 
-.sidebar {
-  border-radius: 0 !important;
-}
 </style>
