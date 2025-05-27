@@ -50,7 +50,6 @@ const router = useRouter();
 const username = ref('');
 const password = ref('');
 
-// 新增测试账号：test/test
 const handleLogin = () => {
   const validUsers = [
     { username: 'a', password: 'a' },
@@ -73,12 +72,25 @@ const handleLogin = () => {
 </script>
 
 <style scoped>
+/* 动画：橙色背景从左侧滑入 */
+@keyframes slideInBackground {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) rotate(45deg);
+    opacity: 1;
+  }
+}
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #ffffff;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -91,7 +103,7 @@ const handleLogin = () => {
   justify-content: center;
   background-color: #EDEFF1;
   padding: 30px;
-  box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.062);
+  box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
   border-radius: 15px;
@@ -109,6 +121,9 @@ const handleLogin = () => {
   z-index: 1;
   border-radius: 30px;
   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.082);
+
+  /* 动画关键 */
+  animation: slideInBackground 1s ease-out forwards;
 }
 
 .heading {
