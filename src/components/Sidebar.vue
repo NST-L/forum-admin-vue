@@ -170,10 +170,10 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 20px;
-  height: 20px;
+  width: 100%;
+  height: 100%;
   background-color: #DAE0E6; /* 预览填充色 */
-  border-radius: 50%;
+  border-radius: 0;
   opacity: 0;
   transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -220,8 +220,6 @@ export default {
 }
 
 .animated-button:hover .circle {
-  width: 320px;
-  height: 320px;
   opacity: 1;
 }
 
