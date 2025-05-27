@@ -72,31 +72,22 @@
         </router-link>
       </li>
     </ul>
-    <button class="logout-btn" @click="handleLogout">退出登录</button>
   </div>
 </template>
 
 <script>
-import { inject } from 'vue';
-import { useRouter } from 'vue-router';
 
 export default {
   name: 'Sidebar',
   setup() {
-    const store = inject('store');
-    const router = useRouter();
-    const handleLogout = () => {
-      store.logout();
-      router.push('/login');
-    };
-    return { handleLogout };
+    return { };
   }
 }
 </script>
 
 <style scoped>
 .sidebar {
-  width: 12%;
+  width: 15%;
   background: #fff;
   color: #000000; /* 侧边栏黑色文字 */
   overflow: hidden;
@@ -116,19 +107,14 @@ export default {
   }
 }
 
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(10, 10, 44, 0.39);
-  text-align: center;
-}
+
 
 .sidebar-menu {
   list-style: none;
-  padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   padding: 20px;
 
   /* 移动端适配：减少内边距 */
@@ -150,7 +136,7 @@ export default {
   border-radius: 15px;
   font-weight: 500;
   color: #686868; /* 未激活状态文字 */
-  box-shadow: 0 0 0 2px #666666; /* 按钮边框 */
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); /* 增强按钮的立体感与点击感 */
   cursor: pointer;
   overflow: hidden;
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
@@ -227,7 +213,7 @@ export default {
   /* 优化阴影反馈 */
   box-shadow: 
     0 0 0 4px #ffffff, 
-    0 0 10px rgba(0, 0, 0, 0.2);
+    0 0 10px rgba(0, 0, 0, 2);
   
   /* 添加过渡动画 */
   transition: all 0.1s ease-in-out;
@@ -241,7 +227,7 @@ export default {
 
 .router-link-exact-active .animated-button {
   background-color:#DAE0E6;
-  box-shadow: 0 0 0 4px #ffffff; /* 当前路由指示边框 */
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7); /* 当前路由指示边框 */
   color: #000000; /* 当前路由文字 */
 }
 
@@ -254,7 +240,7 @@ export default {
 }
 
 /* 去除router-link下划线 */
-.nav-link, .nav-link:visited, .nav-link.router-link-exact-active, .nav-link.router-link-active {
+.nav-link {
   text-decoration: none !important;
 }
 </style>
