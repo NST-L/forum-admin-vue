@@ -51,32 +51,35 @@ export default {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh; /* 确保最小高度为视口高度 */
 }
 
 .main-layout {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-top: 60px; /* 顶部导航栏高度补偿 */
-  height: calc(100vh - 60px); /* 新增高度计算 */
+  margin-top: 60px;
+  height: calc(100vh - 60px); /* 计算高度减去导航栏 */
 }
 
 .app-container {
   display: flex;
   flex: 1;
-  overflow: visible;
+  overflow: hidden; /* 改为hidden防止内容溢出 */
   position: relative;
 }
-
 
 .main-content {
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
-  border-left: 1px solid #ccc; /* 添加左侧竖线 */
+  border-left: 1px solid #ccc;
+  min-height: calc(100vh - 60px); /* 确保最小高度 */
+}
 
-  /* 移动端适配 */
-  @media (max-width: 768px) {
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .main-content {
     margin-left: 0;
     border-left: none; /* 移动端不显示竖线 */
   }
