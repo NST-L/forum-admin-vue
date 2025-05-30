@@ -1,6 +1,5 @@
 <template>
   <div :class="['sidebar', { collapsed: isCollapsed }]">
-    <!-- 折叠/展开按钮 -->
     <button class="toggle-btn" @click="toggleSidebar">
       <svg v-if="isCollapsed" viewBox="0 0 24 24" class="toggle-icon">
         <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -11,75 +10,75 @@
     </button>
 
     <ul class="sidebar-menu">
-      <li v-if="!isCollapsed">
+      <li>
         <router-link to="/" exact class="nav-link">
           <button class="animated-button">
             <span class="text" v-if="!isCollapsed">首页</span>
             <svg class="arr-1" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <svg class="arr-2" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <span class="circle"></span>
           </button>
         </router-link>
       </li>
 
-      <li v-if="!isCollapsed">
+      <li>
         <router-link to="/user-management" class="nav-link">
           <button class="animated-button">
             <span class="text" v-if="!isCollapsed">用户管理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <svg class="arr-2" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <span class="circle"></span>
           </button>
         </router-link>
       </li>
 
-      <li v-if="!isCollapsed">
-        <router-link to="/content-moderation" class="nav-link">
-          <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">内容审核与违规处理</span>
-            <svg class="arr-1" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-            </svg>
-            <svg class="arr-2" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-            </svg>
-            <span class="circle"></span>
-          </button>
-        </router-link>
-      </li>
-
-      <li v-if="!isCollapsed">
-        <router-link to="/data-dashboard" class="nav-link">
-          <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">后台数据管理</span>
-            <svg class="arr-1" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-            </svg>
-            <svg class="arr-2" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-            </svg>
-            <span class="circle"></span>
-          </button>
-        </router-link>
-      </li>
-
-      <li v-if="!isCollapsed">
+      <li>
         <router-link to="/report-handling" class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">举报处理机制</span>
+            <span class="text" v-if="!isCollapsed">帖子违规处理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <svg class="arr-2" viewBox="0 0 24 24">
-              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
+            </svg>
+            <span class="circle"></span>
+          </button>
+        </router-link>
+      </li>
+
+      <li>
+        <router-link to="/comment-violation" class="nav-link">
+          <button class="animated-button">
+            <span class="text" v-if="!isCollapsed">评论违规处理</span>
+            <svg class="arr-1" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
+            </svg>
+            <svg class="arr-2" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
+            </svg>
+            <span class="circle"></span>
+          </button>
+        </router-link>
+      </li>
+
+      <li>
+        <router-link to="/user-violation" class="nav-link">
+          <button class="animated-button">
+            <span class="text" v-if="!isCollapsed">用户违规处理</span>
+            <svg class="arr-1" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
+            </svg>
+            <svg class="arr-2" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
             <span class="circle"></span>
           </button>
@@ -91,7 +90,6 @@
 
 <script setup>
 import { ref } from 'vue'
-
 const isCollapsed = ref(false)
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
