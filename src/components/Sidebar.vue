@@ -1,19 +1,10 @@
 <template>
-  <div :class="['sidebar', { collapsed: isCollapsed }]">
-    <button class="toggle-btn" @click="toggleSidebar">
-      <svg v-if="isCollapsed" viewBox="0 0 24 24" class="toggle-icon">
-        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      <svg v-else viewBox="0 0 24 24" class="toggle-icon">
-        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/>
-      </svg>
-    </button>
-
+  <div class="sidebar">
     <ul class="sidebar-menu">
       <li>
         <router-link to="/" exact class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">首页</span>
+            <span class="text">首页</span>
             <svg class="arr-1" viewBox="0 0 24 24">
               <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
@@ -28,7 +19,7 @@
       <li>
         <router-link to="/user-management" class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">用户管理</span>
+            <span class="text">用户管理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
               <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
@@ -43,7 +34,7 @@
       <li>
         <router-link to="/report-handling" class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">帖子违规处理</span>
+            <span class="text">帖子违规处理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
               <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
@@ -58,7 +49,7 @@
       <li>
         <router-link to="/comment-violation" class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">评论违规处理</span>
+            <span class="text">评论违规处理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
               <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
@@ -73,7 +64,7 @@
       <li>
         <router-link to="/user-violation" class="nav-link">
           <button class="animated-button">
-            <span class="text" v-if="!isCollapsed">用户违规处理</span>
+            <span class="text">用户违规处理</span>
             <svg class="arr-1" viewBox="0 0 24 24">
               <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"/>
             </svg>
@@ -89,37 +80,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const isCollapsed = ref(false)
-const toggleSidebar = () => {
-  isCollapsed.value = !isCollapsed.value
-}
+// ... existing code ...
 </script>
 
 <style scoped>
 .sidebar {
-  width: 15%;
+  min-width: 11.25rem;
+  width: 15vw;
+  max-width: 18.75rem;
   background: #fff;
   color: #000000;
   box-sizing: border-box;
   position: relative;
   border-right: 1px solid #DAE0E6;
   transition: width 0.3s ease;
+  will-change: width;
+  transform: translateZ(0);
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .collapsed {
-/* 设置收起后侧边栏宽度 */
+  /* 设置收起后侧边栏宽度 */
   width: 2%;
 }
 
 .toggle-btn {
   position: absolute;
-  top: 15px;
-  right: -20px;
-  width: 40px;
-  height: 40px;
+  top: 0.9375rem;
+  right: -1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background-color: #fff;
-  border: 3px solid #DAE0E6;
+  border: 0.1875rem solid #DAE0E6;
   border-radius: 50%;
   cursor: pointer;
   z-index: 1;
@@ -149,8 +144,9 @@ const toggleSidebar = () => {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 6px 26px;
-  font-size: 16px;
+  padding: 0.375rem 1.625rem;
+  font-size: 1rem;
+  min-height: 2.75rem;
   background-color: inherit;
   border-radius: 15px;
   font-weight: 500;
@@ -210,11 +206,18 @@ const toggleSidebar = () => {
 
 .nav-link { text-decoration: none !important; }
 
+@media (max-width: 1024px) {
+  .sidebar { width: 22vw; }
+}
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;
+    width: 100vw;
+    min-width: 0;
+    max-width: 100vw;
+    position: fixed;
+    left: 0; top: 0; z-index: 2000;
+    height: 100vh;
     border-radius: 0;
-    height: auto;
     border-right: none;
   }
   .sidebar.collapsed { width: 100%; }

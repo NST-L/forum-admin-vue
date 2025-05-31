@@ -76,14 +76,15 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #fff; /* 设置导航栏背景，增强清晰度和可读性 */
-  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.3); /* 提升导航栏的层次感和立体感 */
+  padding: 0.625rem 1.25rem;
+  background-color: #fff;
+  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.3);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  width: 100%;
 }
 
 .logo {
@@ -92,56 +93,35 @@ export default {
 }
 
 .logo img {
-  margin-right: 10px;
+  margin-right: 0.625rem;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 /* 新增按钮样式 */
 .Btn {
-  width: 130px;
-  height: 40px;
+  min-width: 8.125rem;
+  height: 2.75rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  margin-right: 3rem;
+  border: none;
+  box-shadow: 2px 2px 4px #00000081;
+  color: #111;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background-color: #DAE0E6; /* 设置按钮背景，使其醒目易见 */
-  border: none;
-  color: rgb(0, 0, 0); /* 设置按钮文字颜色，确保在深色背景下可读性 */
-  font-weight: 600;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.644); /* 增强按钮的立体感与点击感 */
-  position: relative;
-  overflow: hidden;
-  transition-duration: .3s;
-  margin-right: 20px;
-  border-radius: 8px; /* 设置按钮圆角，提升视觉美感与现代感 */
-}
-
-.Btn::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.1); /* 设置按钮悬浮时的视觉特效颜色 */
-  top: 0;
-  left: 0;
-  transform: scaleX(0); /* 初始状态为不显示 */
-  transform-origin: left;
-  transition: transform 0.3s ease;
-  z-index: 0;
-}
-
-.Btn:hover::before {
-  transform: scaleX(1); /* 悬浮时放大为100%宽度 */
+  gap: 0.5em;
+  font-weight: 500;
+  transition: box-shadow 0.2s, transform 0.1s;
 }
 
 .Btn:active {
-  transform: translate(5px, 5px);
-  transition-duration: .3s;
+  box-shadow: 0 1px 0 #888, 0 0 0 2px #fff inset;
+  transform: translateY(1px);
 }
 
-.Btn > * {
-  position: relative;
-  z-index: 1; /* 保证内容在悬浮遮罩上层 */
+.Btn:hover {
+  box-shadow: 2px 2px 4px #000000;
 }
 
 .svgIcon {
@@ -222,5 +202,23 @@ export default {
 .label {
   font-weight: 500;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .top-navbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem 0.5rem;
+  }
+  .logo {
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  .Btn {
+    width: 100%;
+    margin: 0.5rem 0 0 0;
+    font-size: 1.125rem;
+    min-height: 3rem;
+  }
 }
 </style>
