@@ -16,7 +16,11 @@
     </div>
 
     <!-- 用户列表表格 -->
-    <div class="table-container">
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>正在加载用户数据...</p>
+    </div>
+    <div v-else class="table-container">
       <table class="user-table">
         <thead>
           <tr>
@@ -142,6 +146,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import { getUserList, updateUserStatus, getUserDetail, exportUserActivity } from '@/api/userManagement';
 
 export default {
   setup() {
@@ -155,18 +160,30 @@ export default {
     const sortOption = ref('register_time');
     const currentPage = ref(1);
     const itemsPerPage = ref(10);
+    const loading = ref(false);
     
-    // 模拟数据
+    // 新增：用户详情弹窗状态
+    const showUserDetailModal = ref(false);
+    const selectedUser = ref(null);
+    
+    // 获取用户列表数据
+    const fetchUsers = async () => {
+      loading.value = true;
+      try {
+        const response = await getUserList();
+        if (response.data.success) {
+          users.value = response.data.data.users;
+        }
+      } catch (error) {
+        console.error('获取用户列表失败:', error);
+      } finally {
+        loading.value = false;
+      }
+    };
+    
+    // 初始化数据
     onMounted(() => {
-      users.value = Array.from({length: 50}, (_, i) => ({
-        id: `UID${i+1000}`,
-        username: `用户${i+1}`,
-        phone: `1381234567${i+1}`,
-        role: i % 4 === 0 ? '管理员' : i % 4 === 1 ? '版主' : '普通用户',
-        status: i % 3 === 0 ? 'inactive' : 'active',
-        registeredAt: new Date(Date.now() - Math.random() * 1000000000),
-        activityScore: Math.floor(Math.random() * 1000)
-      }));
+      fetchUsers();
     });
 
     // 计算属性
@@ -180,7 +197,7 @@ export default {
     const sortedUsers = computed(() => {
       return [...filteredUsers.value].sort((a, b) => {
         if (sortOption.value === 'register_time') {
-          return b.registeredAt - a.registeredAt;
+          return new Date(b.registeredAt) - new Date(a.registeredAt);
         } else {
           return b.activityScore - a.activityScore;
         }
@@ -225,14 +242,22 @@ export default {
       banReason.value = '';
     };
 
-    const confirmAction = () => {
+    const confirmAction = async () => {
       if (!banReason.value.trim()) return;
       
-      const user = users.value.find(u => u.id === currentUserId.value);
-      if (user) {
-        user.status = currentAction.value === 'disable' ? 'inactive' : 'active';
-        // 这里应添加实际的操作日志记录逻辑
-        console.log(`操作日志：${currentAction.value === 'disable' ? '封禁' : '解封'}用户 ${user.username}，原因：${banReason.value}`);
+      try {
+        const newStatus = currentAction.value === 'disable' ? 'inactive' : 'active';
+        const response = await updateUserStatus(currentUserId.value, newStatus, banReason.value);
+        
+        if (response.data.success) {
+          const user = users.value.find(u => u.id === currentUserId.value);
+          if (user) {
+            user.status = newStatus;
+          }
+          console.log(response.data.message);
+        }
+      } catch (error) {
+        console.error('更新用户状态失败:', error);
       }
       
       closeModal();
@@ -258,32 +283,32 @@ export default {
       return status === 'active' ? 'active' : 'inactive';
     };
 
-    const viewUserPosts = (user) => {
-      selectedUser.value = {
-        ...user,
-        activityLogs: [
-          `登录时间：${new Date().toLocaleString()}`,
-          `最近发帖：Vue3新特性讨论`,
-          `最后访问IP：192.168.1.${Math.floor(Math.random()*100)}`
-        ]
-      };
-      showUserDetailModal.value = true;
+    const viewUserPosts = async (user) => {
+      try {
+        const response = await getUserDetail(user.id);
+        if (response.data.success) {
+          selectedUser.value = response.data.data;
+          showUserDetailModal.value = true;
+        }
+      } catch (error) {
+        console.error('获取用户详情失败:', error);
+      }
     };
 
-    const exportUserActivity = (userId) => {
-      // 导出CSV逻辑
-      console.log(`导出用户ID ${userId} 的行为数据`);
-      // 这里可以添加实际的导出逻辑
-    };
-
-    // 新增：用户详情弹窗状态
-    const showUserDetailModal = ref(false);
-    const selectedUser = ref(null);
-
-    // 新增：关闭用户详情弹窗
     const closeUserDetailModal = () => {
       showUserDetailModal.value = false;
       selectedUser.value = null;
+    };
+
+    const handleExportUserActivity = async (userId) => {
+      try {
+        const response = await exportUserActivity(userId);
+        if (response.data.success) {
+          console.log(response.data.message);
+        }
+      } catch (error) {
+        console.error('导出用户活动记录失败:', error);
+      }
     };
 
     return {
@@ -296,6 +321,7 @@ export default {
       sortOption,
       currentPage,
       itemsPerPage,
+      loading,
       paginatedUsers,
       totalPages,
       handleSearch,
@@ -310,11 +336,9 @@ export default {
       statusClass,
       viewUserPosts,
       closeUserDetailModal,
-      exportUserActivity,
+      exportUserActivity: handleExportUserActivity,
       showUserDetailModal,
-      selectedUser,
-      viewUserPosts,
-      closeUserDetailModal
+      selectedUser
     };
   }
 };
@@ -550,5 +574,27 @@ export default {
   padding: 4px 0;
   font-size: 13px;
   color: #555;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

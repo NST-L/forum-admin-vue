@@ -5,7 +5,7 @@
       <router-view />
     </div>
     <div v-else-if="store.state.loggedIn">
-      <div class="main-layout"> <!-- 新增布局容器 -->
+      <div class="main-layout">
         <div class="app-container">
           <Sidebar />
           <div class="main-content">
@@ -22,7 +22,7 @@
 
 <script>
 import Sidebar from './components/Sidebar.vue';
-import TopNavbar from './components/TopNavbar.vue'; // 新增导入
+import TopNavbar from './components/TopNavbar.vue';
 import { inject } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -30,7 +30,7 @@ export default {
   name: 'App',
   components: {
     Sidebar,
-    TopNavbar, // 新增组件
+    TopNavbar,
   },
   setup() {
     const store = inject('store');
@@ -42,16 +42,17 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #000000;
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* 确保最小高度为视口高度 */
+  /* 整个应用的根容器，设置整体字体，字体抗锯齿效果，字体颜色和布局 */
+  font-family: Avenir, Helvetica, Arial, sans-serif; /* 字体族，优先使用 Avenir */
+  -webkit-font-smoothing: antialiased; /* 使字体在webkit内核浏览器上平滑 */
+  -moz-osx-font-smoothing: grayscale;  /* 使字体在Firefox（macOS）上平滑 */
+  color: #000000; /* 文字颜色为黑色 */
+  margin: 0; /* 去除默认外边距 */
+  padding: 0; /* 去除默认内边距 */
+  height: 100vh; /* 高度占满视口高度 */
+  display: flex; /* 使用弹性盒模型，方便布局 */
+  flex-direction: column; /* 主轴方向为垂直，列方向 */
+  min-height: 100vh; /* 最小高度也设为视口高度，保证全屏显示 */
 }
 
 .main-layout {
@@ -59,42 +60,40 @@ export default {
   display: flex;
   flex-direction: column;
   margin-top: 60px;
-  height: calc(100vh - 60px); /* 计算高度减去导航栏 */
+  height: calc(100vh - 65px);
+  min-height: 0;
 }
 
 .app-container {
   display: flex;
   flex: 1;
-  overflow: hidden; /* 改为hidden防止内容溢出 */
+  overflow: hidden;
   position: relative;
+  min-height: 0;
+  height: 100%;
 }
 
 .main-content {
   flex: 1;
-  overflow-y: auto;
   box-sizing: border-box;
   border-left: 1px solid #ccc;
-  min-height: calc(100vh - 60px); /* 确保最小高度 */
+  min-height: 0;
+  height: 100%;
 }
 
-/* 移动端适配 */
+/* 响应式布局：当屏幕宽度小于等于768px时 */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
-    border-left: none; /* 移动端不显示竖线 */
+    border-left: none;
   }
-}
-
-/* 移动端响应式布局 */
-@media (max-width: 768px) {
   .main-layout {
     margin-top: 0;
-    height: 100vh; /* 移动端全屏高度 */
+    height: 100vh;
   }
-
   .app-container {
     flex-direction: column;
-    height: auto; /* 自动高度适应内容 */
+    height: auto;
   }
 }
 
