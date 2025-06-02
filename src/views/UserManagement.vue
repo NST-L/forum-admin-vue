@@ -8,6 +8,11 @@
           placeholder="搜索用户名/手机号"
           @input="handleSearch"
         />
+        <select v-model="statusFilter">
+          <option value="">全部状态</option>
+          <option value="0">启用</option>
+          <option value="1">禁用</option>
+        </select>
         <select v-model="sortOption" @change="handleSort">
           <option value="register_time">按注册时间排序</option>
           <option value="activity">按活跃度排序</option>
@@ -18,13 +23,18 @@
     <!-- 用户列表表格 -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
-      <p>正在加载用户数据...</p>
+      <p class="loading-tip">正在加载数据，请稍候…</p>
+    </div>
+    <div v-else-if="paginatedUsers.length === 0" class="empty-container">
+      <i class="fas fa-info-circle empty-icon"></i>
+      <p class="empty-tip">暂无用户数据</p>
     </div>
     <div v-else class="table-container">
       <table class="user-table">
         <thead>
           <tr>
             <th>ID</th>
+            <th>头像</th>
             <th>用户名</th>
             <th>手机号</th>
             <th>角色</th>
@@ -36,20 +46,26 @@
         <tbody>
           <tr v-for="user in paginatedUsers" :key="user.id">
             <td>{{ user.id }}</td>
+            <td>
+              <img v-if="user.avatar_url" :src="user.avatar_url" alt="头像" class="user-avatar" />
+              <div v-else class="user-avatar default-avatar"></div>
+            </td>
             <td class="username" @click="viewUserPosts(user)">
               {{ user.username }}
             </td>
             <td>{{ user.phone }}</td>
-            <td :class="roleClass(user.role)">{{ user.role }}</td>
-            <td :class="statusClass(user.status)">{{ user.status === 'active' ? '启用' : '禁用' }}</td>
+            <td :class="roleClass(user.role)">{{ roleText(user.role) }}</td>
+            <td :class="[user.status === 1 || user.status === '1' || user.status === 'inactive' || user.status === '禁用' ? 'status-banned' : 'status-active']">
+              {{ (user.status === 0 || user.status === '0' || user.status === 'active' || user.status === '正常') ? '启用' : '禁用' }}
+            </td>
             <td>{{ formatDate(user.registeredAt) }}</td>
             <td>
               <button 
                 class="status-btn" 
                 @click="toggleUserStatus(user)"
-                :class="user.status === 'active' ? 'disable' : 'enable'"
+                :class="(user.status === 0 || user.status === '0' || user.status === 'active') ? 'disable' : 'enable'"
               >
-                {{ user.status === 'active' ? '封禁' : '解封' }}
+                {{ (user.status === 0 || user.status === '0' || user.status === 'active') ? '封禁' : '解封' }}
               </button>
               <button class="action-btn export" @click="exportUserActivity(user.id)">导出记录</button>
             </td>
@@ -106,6 +122,13 @@
             <span>{{ selectedUser?.id }}</span>
           </div>
           <div class="detail-row">
+            <span class="label">头像：</span>
+            <span>
+              <img v-if="selectedUser?.avatar_url" :src="selectedUser.avatar_url" alt="头像" class="user-avatar detail-avatar" />
+              <div v-else class="user-avatar detail-avatar default-avatar"></div>
+            </span>
+          </div>
+          <div class="detail-row">
             <span class="label">用户名：</span>
             <span>{{ selectedUser?.username }}</span>
           </div>
@@ -115,12 +138,12 @@
           </div>
           <div class="detail-row">
             <span class="label">角色：</span>
-            <span :class="roleClass(selectedUser?.role)">{{ selectedUser?.role }}</span>
+            <span :class="roleClass(selectedUser?.role)">{{ roleText(selectedUser?.role) }}</span>
           </div>
           <div class="detail-row">
             <span class="label">状态：</span>
             <span :class="statusClass(selectedUser?.status)">
-              {{ selectedUser?.status === 'active' ? '启用' : '禁用' }}
+              {{ (selectedUser?.status === 0 || selectedUser?.status === '0' || selectedUser?.status === 'active' || selectedUser?.status === '正常') ? '启用' : '禁用' }}
             </span>
           </div>
           <div class="detail-row">
@@ -145,7 +168,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { getUserList, updateUserStatus, getUserDetail, exportUserActivity } from '@/api/userManagement';
 
 export default {
@@ -159,12 +182,14 @@ export default {
     const searchQuery = ref('');
     const sortOption = ref('register_time');
     const currentPage = ref(1);
-    const itemsPerPage = ref(10);
+    const itemsPerPage = ref(15);
     const loading = ref(false);
     
     // 新增：用户详情弹窗状态
     const showUserDetailModal = ref(false);
     const selectedUser = ref(null);
+    
+    const statusFilter = ref('')
     
     // 获取用户列表数据
     const fetchUsers = async () => {
@@ -184,14 +209,31 @@ export default {
     // 初始化数据
     onMounted(() => {
       fetchUsers();
+      // 禁止 main-content 和 #app 的滚动
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.style.overflowY = 'hidden';
+      const app = document.getElementById('app');
+      if (app) app.style.overflowY = 'hidden';
+    });
+    onUnmounted(() => {
+      // 恢复 main-content 和 #app 的滚动
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) mainContent.style.overflowY = '';
+      const app = document.getElementById('app');
+      if (app) app.style.overflowY = '';
     });
 
     // 计算属性
     const filteredUsers = computed(() => {
-      return users.value.filter(user => 
-        user.username.includes(searchQuery.value) || 
-        user.phone.includes(searchQuery.value)
-      );
+      return users.value.filter(user => {
+        // 兼容后端返回的 role 字段（0-user/1-admin）
+        const isNormalUser = user.role === 0 || user.role === '0' || user.role === 'user';
+        // 状态筛选
+        const matchStatus = statusFilter.value === '' || String(user.status) === statusFilter.value || (statusFilter.value === '0' && (user.status === 0 || user.status === '0' || user.status === 'active' || user.status === '正常')) || (statusFilter.value === '1' && (user.status === 1 || user.status === '1' || user.status === 'inactive' || user.status === '禁用'));
+        // 支持原有搜索功能
+        const matchSearch = user.username.includes(searchQuery.value) || user.phone.includes(searchQuery.value);
+        return isNormalUser && matchStatus && matchSearch;
+      });
     });
 
     const sortedUsers = computed(() => {
@@ -233,7 +275,8 @@ export default {
 
     const toggleUserStatus = (user) => {
       currentUserId.value = user.id;
-      currentAction.value = user.status === 'active' ? 'disable' : 'enable';
+      // status: 0-正常/1-封禁
+      currentAction.value = (user.status === 0 || user.status === '0' || user.status === 'active' || user.status === '正常') ? 'disable' : 'enable';
       showModal.value = true;
     };
 
@@ -244,11 +287,10 @@ export default {
 
     const confirmAction = async () => {
       if (!banReason.value.trim()) return;
-      
       try {
-        const newStatus = currentAction.value === 'disable' ? 'inactive' : 'active';
+        // status: 0-正常/1-封禁
+        const newStatus = currentAction.value === 'disable' ? 1 : 0;
         const response = await updateUserStatus(currentUserId.value, newStatus, banReason.value);
-        
         if (response.data.success) {
           const user = users.value.find(u => u.id === currentUserId.value);
           if (user) {
@@ -259,28 +301,38 @@ export default {
       } catch (error) {
         console.error('更新用户状态失败:', error);
       }
-      
       closeModal();
     };
 
     const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('zh-CN', {
+      if (!date) return '';
+      const d = new Date(date);
+      if (isNaN(d)) return date;
+      return d.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
       });
     };
 
+    // 角色样式
     const roleClass = (role) => {
-      switch(role) {
-        case '管理员': return 'admin';
-        case '版主': return 'moderator';
-        default: return 'user';
-      }
+      if (role === 1 || role === '1' || role === 'admin' || role === '管理员') return 'admin';
+      if (role === 'moderator' || role === '版主') return 'moderator';
+      return 'user';
+    };
+
+    // 角色显示文本
+    const roleText = (role) => {
+      if (role === 1 || role === '1' || role === 'admin' || role === '管理员') return '管理员';
+      if (role === 'moderator' || role === '版主') return '版主';
+      return '用户';
     };
 
     const statusClass = (status) => {
-      return status === 'active' ? 'active' : 'inactive';
+      // status: 0-正常/1-封禁，兼容字符串和原有 active/inactive
+      if (status === 0 || status === '0' || status === 'active' || status === '正常') return 'active';
+      return 'inactive';
     };
 
     const viewUserPosts = async (user) => {
@@ -333,12 +385,14 @@ export default {
       confirmAction,
       formatDate,
       roleClass,
+      roleText,
       statusClass,
       viewUserPosts,
       closeUserDetailModal,
       exportUserActivity: handleExportUserActivity,
       showUserDetailModal,
-      selectedUser
+      selectedUser,
+      statusFilter
     };
   }
 };
@@ -349,6 +403,8 @@ export default {
   padding: 40px;
   background-color: #f5f7fa;
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .search-filter {
@@ -410,9 +466,9 @@ export default {
   border-radius: 4px;
 }
 
-.admin { background-color: #f0f5ff; color: #1890ff; }
-.moderator { background-color: #fff7f0; color: #fa8c16; }
-.user { background-color: #f6ffed; color: #7cb342; }
+.admin { color: #1890ff; background: none !important; }
+.moderator { color: #fa8c16; background: none !important; }
+.user { color: #7cb342; background: none !important; }
 
 .status-class.active {
   color: #52c41a;
@@ -443,7 +499,6 @@ export default {
   border-radius: 4px;
   background-color: #fff;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .page-btn:hover {
@@ -590,11 +645,61 @@ export default {
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+  display: inline-block;
+  vertical-align: middle;
+}
+.default-avatar {
+  background: linear-gradient(135deg, #e0e0e0 60%, #bdbdbd 100%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.detail-avatar {
+  width: 64px;
+  height: 64px;
+}
+
+.loading-tip {
+  color: #888;
+  font-size: 14px;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.empty-tip {
+  font-size: 14px;
+  color: #666;
+}
+
+.status-banned {
+  background-color: rgba(255, 77, 79, 0.18) !important;
+  color: #ff4d4f !important;
+}
+
+.status-active {
+  background-color: rgba(82, 196, 26, 0.13) !important;
+  color: #52c41a !important;
 }
 </style>

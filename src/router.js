@@ -55,7 +55,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const isLoggedIn = store.state.loggedIn;
     const token = store.state.token;
-    const isTokenValid = token === 'mock-token-123';
+    // 只要有token就认为有效
+    const isTokenValid = !!token;
 
     if (to.meta.requiresAuth && (!isLoggedIn || !isTokenValid)) {
         store.logout();
