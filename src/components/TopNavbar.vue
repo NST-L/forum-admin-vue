@@ -1,16 +1,18 @@
 <template>
   <nav class="top-navbar">
     <div class="logo">
-      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADEElEQVR4nO2ZW4hOURTHf3MxM2YQIrekJkpoGEIRGZcXt5IiIQ9oxgPlQURyifJAmEa5pHgQKc/yQInIPJBbcp0HBlEYNTOuM1q1Tu1253x95/v2tLf6/rXq7H323mf/ztm3tQ4UVFBBPlQJrADOAM3AZ+AnsIr/RH2A/cBXoDvGngElBK4a4GUCgGlvgevAFqA3AUJ8yQLCtsfASAKaDy9ygIjsAdCLALQrD4jI6n1DlACtDkDu+QaZ4gAisqE+QdY5BKnzCVLvEGSNT5AVDkG87vqzHYIs8AlSBnxzANEFDMSzLjgAueIboi/w2gHIU6DcJ8hih3Nkmk+QeQ5BZHP16n+0O4DoBCrwrB0OQA4SiPblAbGdgDQ/D5DRBKRS4F0OEHcIUNtyAJFIS3AqA+6ngLgBFBGoJqUAGUbAGp8CZBABqyYFyCgC1BJ1ssamAKkG5oYEtBr4A+xOsQy/0om+B/gAjCMA7dTOiV8img68zwDRapx0L2neTB8d7w9sBI5YK5UEqCNVASdiII5qZDLScz0wlmuM7DLQAAzuSYBKfftt2qlfClVkDKfhRvkB1sm4TQEjjdD8m5quNcpKvcaeWNlq9O3Zb1gmuOi0pmW+mDprlD1p3VtrnXwlOm+3/xFY6gpiIdCRMJ5lgouWa1o6bmpqBsfpnOYv0vSBhGf8BTbnC1GnY9huXD79JuOIsdX492EeO8YYdeQ6UrERM5YvEakhg6O2PleIIfpp4xqVN406dcc1nBPne5vDxezwLCO/S9uIPETzK5r2A5icC0i0NMbZRGPY2fcOGW1cNfLlOlJjTD3ZVNG2k557Ky3EBB2bmcI3VQmdkp8+0SpnDstOzSuO2WfOa50K4KHLYPfhLHbni1pW/jbdte7VJoSKZGLPsfLeAP0yfKluy06lAXmURYNiG7R8tfUnVzbLppjyTVb+b2CGtiGQ5lxLsidpQL5nCdKhe4xomdERWZFaYsq36NkqSu/VuuKbfMryme1pHLLbWTbarRulhE5Fx1L666U6Z66lqNccsmdZUEEEqn+Att4o0/bvGgAAAABJRU5ErkJggg==" alt="businessman">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADEElEQVR4nO2ZW4hOURTHf3MxM2YQIrekJkpoGEIRGZcXt5IiIQ9oxgPlQURyifJAmEa5pHgQKc/yQInIPJBbcp0HBlEYNTOuM1q1Tu1253x95/v2tLf6/rXq7H323mf/ztm3tQ4UVFBBPlQJrADOAM3AZ+AnsIr/RH2A/cBXoDvGngElBK4a4GUCgGlvgevAFqA3AUJ8yQLCtsfASAKaDy9ygIjsAdCLALQrD4jI6n1DlACtDkDu+QaZ4gAisqE+QdY5BKnzCVLvEGSNT5AVDkG87vqzHYIs8AlSBnxzANEFDMSzLjgAueIboi/w2gHIU6DcJ8hih3Nkmk+QeQ5BZHP16n+0O4DoBCrwrB0OQA4SiPblAbGdgDQ/D5DRBKRS4F0OEHcIUNtyAJFIS3AqA+6ngLgBFBGoJqUAGUbAGp8CZBABqyYFyCgC1BJ1ssamAKkG5oYEtBr4A+xOsQy/0om+B/gAjCMA7dTOiV8img68zwDRapx0L2neTB8d7w9sBI5YK5UEqCNVASdiII5qZDLScz0wlmuM7DLQAAzuSYBKfftt2qlfClVkDKfhRvkB1sm4TQEjjdD8m5quNcpKvcaeWNlq9O3Zb1gmuOi0pmW+mDprlD1p3VtrnXwlOm+3/xFY6gpiIdCRMJ5lgouWa1o6bmpqBsfpnOYv0vSBhGf8BTbnC1GnY9huXD79JuOIsdX492EeO8YYdeQ6UrERM5YvEakhg6O2PleIIfpp4xqVN406dcc1nBPne5vDxezwLCO/S9uIPETzK5r2A5icC0i0NMbZRGPY2fcOGW1cNfLlOlJjTD3ZVNG2k557Ky3EBB2bmcI3VQmdkp8+0SpnDstOzSuO2WfOa50K4KHLYPfhLHbni1pW/jbdte7VJoSKZGLPsfLeAP0yfKluy06lAXmURYNiG7R8tfUnVzbLppjyTVb+b2CGtiGQ5lxLsidpQL5nCdKhe4xomdERWZFaYsq36NkqSu/VuuKbfMryme1pHLLbWTbarRulhE5Fx1L666U6Z66lqNccsmdZUEEEqn+Att4o0/bvGgAAAABJRU5ErkJggg==" alt="businessman" filter="brightness(0) invert(1)">
       <span>云社 · Admin</span>
     </div>
-    <button class="Btn" v-if="store.state.username" @click="toggleModal">
-    <svg class="svgIcon" viewBox="0 0 576 512">
-        <path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path>
-      </svg>
-      管理员：{{ store.state.username }}
-    </button>
-    <span v-else>未登录</span>
+    <div class="navbar-actions">
+      <button class="animated-button" v-if="store.state.username" @click="toggleModal">
+        <svg class="svgIcon" viewBox="0 0 576 512">
+          <path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path>
+        </svg>
+        管理员：{{ store.state.username }}
+      </button>
+      <span v-else>未登录</span>
+    </div>
     <!-- 卡片式弹窗 -->
     <div v-if="isModalVisible" class="modal-overlay" @click.self="toggleModal">
       <div class="card">
@@ -47,7 +49,7 @@ import { useRouter } from 'vue-router';
 
 export default {
   name: 'TopNavbar',
-  setup() {
+  setup(props, { emit }) {
     const store = inject('store');
     const router = useRouter();
     const isModalVisible = ref(false);
@@ -72,19 +74,24 @@ export default {
 </script>
 
 <style scoped>
+.top-navbar, .custom-dialog, .card-style {
+  background: #fff !important;
+}
+
 .top-navbar {
+  background: #ffffff !important;
+  box-sizing: border-box;
+  height: 60px;
+  flex-shrink: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.625rem 1.25rem;
-  background-color: #fff;
-  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.3);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.4);
+  position: relative;
+  border-radius: 0;
   z-index: 1000;
-  width: 100%;
 }
 
 .logo {
@@ -96,32 +103,26 @@ export default {
   margin-right: 0.625rem;
   width: 2.25rem;
   height: 2.25rem;
+  filter: none;
 }
 
-/* 新增按钮样式 */
-.Btn {
-  min-width: 8.125rem;
-  height: 2.75rem;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  margin-right: 3rem;
-  border: none;
-  box-shadow: 2px 2px 4px #00000081;
-  color: #111;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 500;
-  transition: box-shadow 0.2s, transform 0.1s;
+.logo span {
+  color: #000000 !important;
 }
 
-.Btn:active {
-  box-shadow: 0 1px 0 #888, 0 0 0 2px #fff inset;
-  transform: translateY(1px);
+/* 新增按钮 */
+.animated-button, button {
+  background: #e8e8e8;
+  color: #090909;
+  border-radius: 0.5em;
+  border: 1px solid #e8e8e8;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+  transition: all 0.3s;
+  cursor: pointer;
 }
-
-.Btn:hover {
-  box-shadow: 2px 2px 4px #000000;
+.animated-button:active, button:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
 }
 
 .svgIcon {
@@ -148,7 +149,7 @@ export default {
 
 /* 新增卡片样式 */
 .card {
-  background-color: #DAE0E6;
+  background-color: #ffffff;
   border-radius: 10px;
   padding: 10px 0;
   width: 200px;
@@ -204,6 +205,13 @@ export default {
   margin: 0;
 }
 
+.navbar-actions {
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 @media (max-width: 768px) {
   .top-navbar {
     flex-direction: column;
@@ -214,7 +222,7 @@ export default {
     justify-content: center;
     margin-bottom: 0.5rem;
   }
-  .Btn {
+  .animated-button {
     width: 100%;
     margin: 0.5rem 0 0 0;
     font-size: 1.125rem;

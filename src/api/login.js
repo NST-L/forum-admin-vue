@@ -1,14 +1,26 @@
-// src/services/login.js
 import apiClient from './http';
 
-export const login = (credentials) => {
-  return apiClient.post('/auth/login', credentials)
-    .then(response => {
-      if (response.data && response.data.token) {
-        // 新增用户名存储逻辑，假设接口返回username字段
-        const username = credentials.username; // 根据实际接口返回字段调整
-        store.login(response.data.token, username); // 调用修改后的store方法
-      }
-      return response;
-    });
+// 用户登录
+export const login = async (username, password) => {
+  return apiClient.post('/api/auth/login', { username, password });
 };
+
+// 用户登出
+export const logout = async () => {
+  return apiClient.post('/api/auth/logout');
+};
+
+// 验证token有效性
+export const verifyToken = async (token) => {
+  return apiClient.post('/api/auth/verify', { token });
+};
+
+// 刷新token
+export const refreshToken = async (token) => {
+  return apiClient.post('/api/auth/refresh', { token });
+};
+
+// 获取用户信息
+export const getUserInfo = async () => {
+  return apiClient.get('/api/auth/user');
+}; 

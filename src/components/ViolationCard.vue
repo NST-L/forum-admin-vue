@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="report-item" 
+    class="report-item card-style" 
     :class="cardClass"
   >
     <div class="user-avatar" v-if="showAvatar">
@@ -10,9 +10,9 @@
     <div class="report-main">
       <div class="report-header">
         <h3>{{ title }}</h3>
-        <span class="status-tag" :class="statusClass">
-          {{ formattedStatus }}
-        </span>
+        <span v-if="status === 0" class="status-tag pending">待处理</span>
+        <span v-else-if="status === 1" class="status-tag resolved">已处理</span>
+        <span v-else-if="status === 2" class="status-tag rejected">已驳回</span>
       </div>
 
       <div class="report-meta">
@@ -60,19 +60,19 @@ const props = defineProps({
 })
 
 const usernameFirstLetter = computed(() => props.title ? props.title[0] : '')
-const formattedStatus = computed(() => props.status === 0 ? '待处理' : '已处理')
-const statusClass = computed(() => props.status === 0 ? 'pending' : 'resolved')
+const formattedStatus = computed(() => props.status === 0 ? '待处理' : props.status === 1 ? '已处理' : '已驳回')
+const statusClass = computed(() => props.status === 0 ? 'pending' : props.status === 1 ? 'resolved' : 'rejected')
 </script>
 
 <style scoped>
+.report-item, .card-style {
+  background: #fff !important;
+}
+
 .report-item {
   display: flex;
   gap: 12px;
-  background: #fff;
-  border-radius: 12px;
   padding: 16px;
-  width: calc(33.333% - 14px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   border-left: 4px solid transparent;
 }
 
@@ -109,17 +109,22 @@ const statusClass = computed(() => props.status === 0 ? 'pending' : 'resolved')
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .status-tag.pending {
-  background: #ffe3e3;
+  background: rgba(255, 99, 132, 0.15); /* 半透明红 */
   color: #e03131;
 }
 
 .status-tag.resolved {
-  background: #d3f9d8;
+  background: rgba(40, 167, 69, 0.15); /* 半透明绿 */
   color: #2b8a3e;
+}
+
+.status-tag.rejected {
+  background: rgba(255, 153, 0, 0.15); /* 半透明橙 */
+  color: #ff9900;
 }
 
 .report-meta {
@@ -139,13 +144,12 @@ const statusClass = computed(() => props.status === 0 ? 'pending' : 'resolved')
   flex-wrap: wrap;
 }
 
-.action-btn {
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 6px;
-  border: none;
+.action-btn, button {
+  background: #e8e8e8;
+  color: #090909;
+  border-radius: 0.5em;
+  border: 1px solid #e8e8e8;
   cursor: pointer;
-  font-weight: 600;
 }
 
 .action-btn.primary {
@@ -163,9 +167,12 @@ const statusClass = computed(() => props.status === 0 ? 'pending' : 'resolved')
   color: #495057;
 }
 
-.action-btn:hover {
-  opacity: 0.9;
+.report-item, .report-header h3, .report-meta, .report-footer, .action-btn {
+  color: #222 !important;
 }
+.status-tag.pending { color: #e03131 !important; }
+.status-tag.resolved { color: #2b8a3e !important; }
+.status-tag.rejected { color: #ff9900 !important; }
 
 @media (max-width: 768px) {
   .report-item {

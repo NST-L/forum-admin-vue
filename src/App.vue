@@ -1,16 +1,15 @@
 <template>
+  <!-- <button class="theme-toggle-btn" @click="toggleTheme">切换主题</button> -->
   <div id="app">
     <TopNavbar v-if="route.path !== '/login'" />
     <div v-if="route.path === '/login'">
       <router-view />
     </div>
     <div v-else-if="store.state.loggedIn">
-      <div class="main-layout">
-        <div class="app-container">
-          <Sidebar />
-          <div class="main-content">
-            <router-view />
-          </div>
+      <div class="main-area">
+        <Sidebar />
+        <div class="main-content">
+          <router-view />
         </div>
       </div>
     </div>
@@ -49,36 +48,26 @@ export default {
   color: #000000; /* 文字颜色为黑色 */
   margin: 0; /* 去除默认外边距 */
   padding: 0; /* 去除默认内边距 */
-  height: 100vh; /* 高度占满视口高度 */
-  display: flex; /* 使用弹性盒模型，方便布局 */
-  flex-direction: column; /* 主轴方向为垂直，列方向 */
-  min-height: 100vh; /* 最小高度也设为视口高度，保证全屏显示 */
-}
-
-.main-layout {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  margin-top: 60px;
-  height: calc(100vh - 65px);
-  min-height: 0;
+  min-height: 100vh;
+  width: 100%;
 }
 
-.app-container {
+.main-area {
   display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 100%;
 }
 
 .main-content {
-  flex: 1;
-  box-sizing: border-box;
-  border-left: 1px solid #ccc;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: calc(100vw - 240px);
   min-height: 0;
-  height: 100%;
+  height: calc(100vh - 60px); /* 60px为顶部栏高度 */
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* 响应式布局：当屏幕宽度小于等于768px时 */
@@ -87,14 +76,23 @@ export default {
     margin-left: 0;
     border-left: none;
   }
-  .main-layout {
-    margin-top: 0;
-    height: 100vh;
-  }
-  .app-container {
+  .main-area {
     flex-direction: column;
     height: auto;
   }
+}
+
+html, body, #app {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  /* 不设置overflow，不设置height */
+}
+
+body {
+  background: rgb(108, 119, 131);
+  background-size: cover;
+  transition: background 0.4s;
 }
 
 </style>

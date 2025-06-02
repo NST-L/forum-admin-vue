@@ -6,6 +6,7 @@ import UserManagement from './views/UserManagement.vue';
 import UserViolation from './views/UserViolation.vue';
 import PostViolation from './views/PostViolation.vue';  
 import CommentViolation from './views/CommentViolation.vue';
+import CategoryManagement from './views/CategoryManagement.vue';
 
 import store from './store.js';
 
@@ -44,6 +45,12 @@ const routes = [
         name: 'CommentViolation',
         component: CommentViolation,
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/category-management',
+        name: 'CategoryManagement',
+        component: CategoryManagement,
+        meta: { requiresAuth: true }
     }
 ];
 
@@ -55,7 +62,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const isLoggedIn = store.state.loggedIn;
     const token = store.state.token;
-    const isTokenValid = token === 'mock-token-123';
+    // 只要有token就认为有效
+    const isTokenValid = !!token;
 
     if (to.meta.requiresAuth && (!isLoggedIn || !isTokenValid)) {
         store.logout();

@@ -1,14 +1,16 @@
 <template>
-  <div class="page-content">
+  <div class="page-content ">
     <div class="charts-wrapper">
-      <div class="chart">
+      <div class="chart card-style">
         <div class="chart-title">
           <div class="time-switch">
             <button 
+              class="chart-switch-btn" 
               :class="{ active: userTimeType === 'month' }" 
               @click="switchUserTimeType('month')"
             >月度</button>
             <button 
+              class="chart-switch-btn" 
               :class="{ active: userTimeType === 'year' }" 
               @click="switchUserTimeType('year')"
             >年度</button>
@@ -16,14 +18,16 @@
         </div>
         <div ref="userChartRef" class="chart-content" />
       </div>
-      <div class="chart">
+      <div class="chart card-style">
         <div class="chart-title">
           <div class="time-switch">
             <button 
+              class="chart-switch-btn" 
               :class="{ active: postTimeType === 'month' }" 
               @click="switchPostTimeType('month')"
             >月度</button>
             <button 
+              class="chart-switch-btn" 
               :class="{ active: postTimeType === 'year' }" 
               @click="switchPostTimeType('year')"
             >年度</button>
@@ -31,12 +35,13 @@
         </div>
         <div ref="postChartRef" class="chart-content" />
       </div>
-      <div class="chart">
+      <div class="chart card-style">
         <div class="chart-title">
           <div class="violation-type-switch">
             <button
               v-for="option in violationTypeOptions"
               :key="option.value"
+              class="chart-switch-btn"
               :class="{ active: selectedViolationType === option.value }"
               @click="selectedViolationType = option.value"
             >
@@ -47,62 +52,43 @@
         <div ref="violationChartRef" class="chart-content" />
       </div>
     </div>
-    <div class="map-container-wrapper">
-      <div id="mapContainer" class="map-container" />
-      <!-- 左上角信息窗口 -->
-      <div v-if="infoContentVisible" class="map-info-window-fixed">
-        <InfoWindowContent
-          v-bind="infoContentData"
-          @drill-down="(adcode, e) => window.go2Adcode(e, adcode)"
-        />
-      </div>
-      <!-- 左下角上浮按钮 -->
-      <div class="map-up-btn-fixed">
-        <input id="up-btn" type="button" class="button" value="行政区上浮" />
-      </div>
-    </div>
-    <!-- 加载状态遮罩 -->
-    <div v-if="isLoading" class="loading-mask">
-      <div class="loading-spinner"></div>
-    </div>
+    <div id="mapContainer" class="map-container" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, h, createApp, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import * as echarts from 'echarts';
-import InfoWindowContent from '@/components/InfoWindowContent.vue';
 import { 
   getUserGrowthData, 
   getPostTrendData, 
   getViolationTypeData,
-  getHomeStats
+  getHomeStats,
+  getPostLocationsCSV
 } from '@/api/home';
-import { mapHeatData } from '@/data/mapHeatData';
+
+// 合并 reasonText 工具函数
+function reasonText(reason) {
+  const map = {
+    0: '违法内容',
+    1: '垃圾广告',
+    2: '人身攻击',
+    3: '涉政内容',
+    4: '侵犯隐私',
+    5: '色情内容',
+    6: '虚假信息',
+    7: '引战言论',
+    8: '其他'
+  };
+  return map[Number(reason)] || '未知';
+}
 
 const userChartRef = ref(null);
 const postChartRef = ref(null);
 const violationChartRef = ref(null);
 
 let map = null;       // 地图实例
-let vLayer = null;    // 行政区热力图层实例
-let infoWin = null;   // 信息窗口实例
-
-// 事件处理函数引用
-let vLayerClickHandler = null;
-let upBtnHandler = null;
-let vLayerMousemoveHandler = null;
-
-const infoContentData = ref({
-  name: '',
-  value: '',
-  childrenNum: 0,
-  adcode: ''
-});
-const infoContentVisible = ref(false);
-const infoContentPos = ref({ left: 0, top: 0 });
-let infoContentApp = null;
-let infoContentEl = null;
+let locaLayer = null; // Loca点云层实例
 
 const userTimeType = ref('month');
 const postTimeType = ref('month');
@@ -138,6 +124,32 @@ let charts = {
   violation: null
 };
 
+let refreshTimer = null;
+
+const violationTypeMap = {
+  0: '违法',
+  1: '广告',
+  2: '攻击',
+  3: '涉政',
+  4: '其他'
+};
+
+function startAutoRefresh() {
+  refreshTimer = setInterval(() => {
+    fetchUserGrowthData();
+    fetchPostTrendData();
+    fetchViolationTypeData();
+    fetchStats();
+  }, 600000); // 10分钟刷新一次
+}
+
+function stopAutoRefresh() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
 // 切换用户增长时间类型
 const switchUserTimeType = async (type) => {
   userTimeType.value = type;
@@ -148,10 +160,8 @@ const switchUserTimeType = async (type) => {
 const fetchUserGrowthData = async () => {
   try {
     const res = await getUserGrowthData(userTimeType.value);
-    if (res.data.success) {
-      userGrowthData.value = res.data.data;
-      updateUserGrowthChart();
-    }
+    userGrowthData.value = res.data;
+    updateUserGrowthChart();
   } catch (error) {
     console.error('获取用户增长数据失败:', error);
   }
@@ -163,17 +173,27 @@ const updateUserGrowthChart = () => {
   if (userChart && userGrowthData.value.xAxis.length > 0) {
     const data = userGrowthData.value;
     userChart.setOption({
+      color: ['#4dabf7', '#f783ac', '#69db7c', '#ff6b6b', '#fab005'],
       title: { 
         text: '用户增长趋势',
         left: 'center',
-        top: 10
+        top: 10,
+        textStyle: { color: '#222' }
       },
-      tooltip: { trigger: 'axis' },
+      tooltip: { trigger: 'axis', textStyle: { color: '#222' } },
       xAxis: { 
         type: 'category', 
-        data: data.xAxis 
+        data: data.xAxis,
+        axisLine: { lineStyle: { color: '#888' } },
+        axisTick: { lineStyle: { color: '#888' } },
+        axisLabel: { color: '#222' }
       },
-      yAxis: { type: 'value' },
+      yAxis: { 
+        type: 'value',
+        axisLine: { lineStyle: { color: '#888' } },
+        axisTick: { lineStyle: { color: '#888' } },
+        axisLabel: { color: '#222' }
+      },
       series: [{ 
         name: '用户数', 
         type: 'line', 
@@ -200,10 +220,8 @@ const switchPostTimeType = async (type) => {
 const fetchPostTrendData = async () => {
   try {
     const res = await getPostTrendData(postTimeType.value);
-    if (res.data.success) {
-      postGrowthData.value = res.data.data;
-      updatePostTrendChart();
-    }
+    postGrowthData.value = res.data;
+    updatePostTrendChart();
   } catch (error) {
     console.error('获取帖子趋势数据失败:', error);
   }
@@ -214,46 +232,49 @@ const updatePostTrendChart = () => {
   const postChart = echarts.getInstanceByDom(postChartRef.value);
   if (postChart && postGrowthData.value.xAxis.length > 0) {
     const data = postGrowthData.value;
+    // 构造所有分类的series
+    const seriesArr = data.categories.map((cat, idx) => ({
+      name: cat,
+      type: 'line',
+      data: data.series[idx],
+      smooth: true
+    }));
+    // 添加总帖子数
+    seriesArr.push({
+      name: '总帖子数',
+      type: 'line',
+      data: data.series[data.series.length - 1],
+      smooth: true
+    });
     postChart.setOption({
+      color: ['#4dabf7', '#f783ac', '#69db7c', '#ff6b6b', '#fab005'],
       title: {
         text: '各类帖子数量趋势',
         left: 'center',
-        top: 10
+        top: 10,
+        textStyle: { color: '#222' }
       },
-      tooltip: { trigger: 'axis' },
+      tooltip: { trigger: 'axis', textStyle: { color: '#222' } },
       legend: {
-        data: ['技术', '生活', '娱乐', '总帖子数'],
+        data: [...data.categories, '总帖子数'],
         bottom: 10,
-        left: 'center'
+        left: 'center',
+        textStyle: { color: '#222' }
       },
-      xAxis: { type: 'category', data: data.xAxis },
-      yAxis: { type: 'value' },
-      series: [
-        {
-          name: '技术',
-          type: 'line',
-          data: data.series[0],
-          smooth: true
-        },
-        {
-          name: '生活',
-          type: 'line',
-          data: data.series[1],
-          smooth: true
-        },
-        {
-          name: '娱乐',
-          type: 'line',
-          data: data.series[2],
-          smooth: true
-        },
-        {
-          name: '总帖子数',
-          type: 'line',
-          data: data.series[3],
-          smooth: true
-        }
-      ]
+      xAxis: { 
+        type: 'category', 
+        data: data.xAxis,
+        axisLine: { lineStyle: { color: '#888' } },
+        axisTick: { lineStyle: { color: '#888' } },
+        axisLabel: { color: '#222' }
+      },
+      yAxis: { 
+        type: 'value',
+        axisLine: { lineStyle: { color: '#888' } },
+        axisTick: { lineStyle: { color: '#888' } },
+        axisLabel: { color: '#222' }
+      },
+      series: seriesArr
     });
   }
 };
@@ -262,10 +283,12 @@ const updatePostTrendChart = () => {
 const fetchViolationTypeData = async () => {
   try {
     const res = await getViolationTypeData(selectedViolationType.value);
-    if (res.data.success) {
-      violationTypeData.value = res.data.data;
-      updateViolationTypeChart();
-    }
+    // 只保留 name 和 value 字段，name 优先 reasonText，否则用后端 name
+    violationTypeData.value = (res.data || []).map(item => ({
+      name: reasonText(item.type) || item.name,
+      value: item.value
+    }));
+    updateViolationTypeChart();
   } catch (error) {
     console.error('获取举报类型数据失败:', error);
   }
@@ -277,14 +300,16 @@ const updateViolationTypeChart = () => {
   if (violationChart && violationTypeData.value.length > 0) {
     const data = violationTypeData.value;
     violationChart.setOption({
-      title: { text: '举报类型占比', left: 'center' },
-      tooltip: { trigger: 'item' },
-      legend: { bottom: 10, left: 'center' },
+      color: ['#4dabf7', '#f783ac', '#69db7c', '#ff6b6b', '#fab005'],
+      title: { text: '举报类型占比', left: 'center', textStyle: { color: '#222' } },
+      tooltip: { trigger: 'item', textStyle: { color: '#222' } },
+      legend: { bottom: 10, left: 'center', textStyle: { color: '#222' } },
       series: [{
         name: '举报类型',
         type: 'pie',
         radius: '60%',
-        data: data
+        data: data,
+        label: { show: false }
       }]
     });
   }
@@ -302,108 +327,146 @@ function loadScript(src) {
   });
 }
 
+// 等待全局变量可用
+function waitForGlobal(globalName, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    if (window[globalName]) {
+      resolve(window[globalName]);
+      return;
+    }
+    
+    const startTime = Date.now();
+    const checkInterval = setInterval(() => {
+      if (window[globalName]) {
+        clearInterval(checkInterval);
+        resolve(window[globalName]);
+      } else if (Date.now() - startTime > timeout) {
+        clearInterval(checkInterval);
+        reject(new Error(`等待 ${globalName} 超时`));
+      }
+    }, 100);
+  });
+}
+
 // 地图初始化
 async function initMap() {
-  await Promise.all([
-    loadScript('https://webapi.amap.com/maps?v=1.4.15&key=c5e324aed119743841396feded4098d2'),
-    loadScript('https://webapi.amap.com/loca?v=1.3.2&key=c5e324aed119743841396feded4098d2'),
-    loadScript('https://a.amap.com/Loca/static/dist/jquery.min.js')
-  ]).then(() => {
-    // eslint-disable-next-line
-    map = new window.AMap.Map('mapContainer', {
-      mapStyle: 'amap://styles/whitesmoke',
-      viewMode: '2D',
-      center: [104.114129, 37.550339],
-      zoom: 4,
-      showLabel: false
-    });
-    // eslint-disable-next-line
-    vLayer = new window.Loca.DistrictLayer({
-      fitView: true,
-      eventSupport: true,
-      drillDown: true,
-      map: map,
-      zIndex: 4,
-      opacity: 0.9,
-      depth: false,
-      text: false,
-      drillDownDuration: 30
-    });
-    // 鼠标悬浮显示信息窗口
-    vLayerMousemoveHandler = function (ev) {
-      if (!ev.feature) {
-        infoContentVisible.value = false;
-        return;
-      }
-      const originalEv = ev.originalEvent;
-      const lnglat = map.containerToLngLat(new window.AMap.Pixel(originalEv.clientX, originalEv.clientY));
-      const feature = ev.feature;
-      const value = ev.value;
-      const property = feature.subFeature.properties;
-      infoContentData.value = {
-        name: property.name,
-        value: value,
-        childrenNum: property.childrenNum,
-        adcode: property.adcode
-      };
-      const mapRect = document.getElementById('mapContainer').getBoundingClientRect();
-      infoContentPos.value = {
-        left: originalEv.clientX - mapRect.left,
-        top: originalEv.clientY - mapRect.top
-      };
-      infoContentVisible.value = true;
-    };
-    vLayer.on('mousemove', vLayerMousemoveHandler);
-    vLayer.on('mouseout', function () {
-      infoContentVisible.value = false;
-    });
-    // 点击事件
-    vLayerClickHandler = function (ev) {
-      // 可扩展：点击下钻等
-    };
-    vLayer.on('click', vLayerClickHandler);
-    // 上浮按钮
-    upBtnHandler = function () {
-      vLayer.goto(-1);
-    };
-    const upBtn = document.getElementById('up-btn');
-    if (upBtn) {
-      upBtn.addEventListener('click', upBtnHandler);
+  try {
+    // 加载AMap主库
+    await loadScript('https://webapi.amap.com/maps?v=1.4.15&key=c5e324aed119743841396feded4098d2');
+    
+    // 等待AMap全局变量可用
+    await waitForGlobal('AMap');
+    
+    // 加载Loca库
+    await loadScript('https://webapi.amap.com/loca?v=1.3.2&key=c5e324aed119743841396feded4098d2');
+    
+    // 等待Loca全局变量可用
+    await waitForGlobal('Loca');
+    
+    // 加载jQuery（可选，某些功能可能需要）
+    await loadScript('https://a.amap.com/Loca/static/dist/jquery.min.js');
+    
+    // 确保库已加载
+    if (!window.AMap || !window.Loca) {
+      throw new Error('地图库加载失败');
     }
-    // 加载和渲染热力数据（使用本地 mapHeatData 数据）
-    vLayer.setData(mapHeatData.rows, {
-      type: 'json',
-      lnglat: '经纬度',
-      value: '区域帖子数量'
+    
+    console.log('地图库加载成功');
+    
+    // 创建地图实例 - 调整为武汉市中心
+    map = new window.AMap.Map('mapContainer', {
+      mapStyle: 'amap://styles/whitesmoke', // 使用浅色主题
+      viewMode: '2D',
+      center: [103.388611, 35.563611], // 中国地图中心点
+      zoom: 4.5, // 适合展示整个中国地图
+      showLabel: false, // 关闭标签，突出光点效果
+      features: ['bg','road','point'], // 显示背景和道路
+      // 性能优化配置
+      animateEnable: false,
+      jogEnable: false,
+      scrollWheel: true,
+      doubleClickZoom: true,
+      keyboardEnable: false,
+      dragEnable: true,
+      zoomEnable: true,
+      rotateEnable: false,
+      pitchEnable: false,
+      resizeEnable: true,
+      showIndoorMap: false
     });
-    vLayer.setOptions({
-      mode: 'count',
-      style: {
-        color: [
-          '#0c2c84', '#225ea8', '#225ea8', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc'
-        ],
-        height: (index, feature) => {
-          const val = feature.value;
-          return val ? val * 5000 : 0;
-        },
-        topColor: '#ffffcc',
-        bottomColor: '#0c2c84',
-        borderColor: '#2a2a32',
-        borderWidth: 1
+    
+    // 加载帖子位置数据并渲染
+    await renderPostLocations();
+    
+    console.log('地图初始化完成');
+    
+  } catch (error) {
+    console.error('地图初始化失败:', error);
+  }
+}
+
+// 渲染帖子位置光点
+async function renderPostLocations() {
+  try {
+    // 获取帖子位置CSV数据
+    const res = await getPostLocationsCSV();
+    const csvData = res.data;
+    console.log('帖子位置数据已加载');
+    // 创建点云层
+    locaLayer = new window.Loca.PointCloudLayer({
+      map: map,
+      fitView: false
+    });
+    // 设置数据
+    locaLayer.setData(csvData, {
+      lnglat: function (obj) {
+        const value = obj.value;
+        return [value['lng'], value['lat']];
       },
-      selectStyle: false
+      type: 'csv'
     });
-    vLayer.render();
-  });
+    // 设置样式 - 红色系热力图效果
+    locaLayer.setOptions({
+      style: {
+        opacity: 0.85, // 适中的不透明度
+        radius: 100, // 增大光点尺寸，让热力效果更明显
+        color: function(index, feature) {
+          const colors = [
+            'rgba(255, 0, 0, 0.9)',
+            'rgba(255, 50, 0, 0.85)',
+            'rgba(255, 100, 0, 0.8)',
+            'rgba(255, 150, 0, 0.75)',
+            'rgba(255, 200, 0, 0.7)',
+            'rgba(255, 255, 0, 0.65)',
+            'rgba(255, 200, 100, 0.6)',
+            'rgba(255, 150, 150, 0.55)'
+          ];
+          return colors[index % colors.length];
+        }
+      }
+    });
+    // 渲染
+    locaLayer.render();
+    // 添加鼠标事件（可选）
+    locaLayer.on('mousemove', function(e) {
+      if (e.feature) {
+        map.setStatus({ cursor: 'pointer' });
+      }
+    });
+    locaLayer.on('mouseout', function() {
+      map.setStatus({ cursor: 'default' });
+    });
+    console.log('帖子位置光点渲染完成');
+  } catch (error) {
+    console.error('渲染帖子位置失败:', error);
+  }
 }
 
 // 获取统计数据
 const fetchStats = async () => {
   try {
     const res = await getHomeStats();
-    if (res.data.success) {
-      stats.value = res.data.data;
-    }
+    stats.value = res.data;
   } catch (error) {
     console.error('获取统计数据失败:', error);
   }
@@ -440,110 +503,85 @@ onMounted(() => {
   initMap();
   // 初始化数据
   initAllData();
-  window.addEventListener('resize', () => {
+  // 启动定时刷新
+  startAutoRefresh();
+  
+  // 优化resize事件监听器，添加passive选项
+  const handleResize = () => {
     charts.user?.resize();
     charts.post?.resize();
     charts.violation?.resize();
     map?.resize && map.resize();
-  });
+  };
+  
+  window.addEventListener('resize', handleResize, { passive: true });
+  
+  // 存储处理器引用用于清理
+  window._chartResizeHandler = handleResize;
 });
 
 // 组件卸载时清理
 onUnmounted(() => {
+  stopAutoRefresh();
   Object.values(charts).forEach(chart => {
     if (chart) chart.dispose();
   });
-  if (map) map.destroy();
-  if (vLayer && vLayerClickHandler) vLayer.off('click', vLayerClickHandler);
-  if (vLayer && vLayerMousemoveHandler) vLayer.off('mousemove', vLayerMousemoveHandler);
-  if (upBtnHandler) {
-    const upBtn = document.getElementById('up-btn');
-    if (upBtn) upBtn.removeEventListener('click', upBtnHandler);
+  if (locaLayer) {
+    if (typeof locaLayer.clear === 'function') locaLayer.clear(); // 清空点云层
+    if (typeof locaLayer.remove === 'function') locaLayer.remove(); // 从地图移除点云层
+    locaLayer = null;
   }
-  window.removeEventListener('resize', () => {});
+  if (map) map.destroy();
+  // 正确移除resize事件监听器
+  if (window._chartResizeHandler) {
+    window.removeEventListener('resize', window._chartResizeHandler);
+    delete window._chartResizeHandler;
+  }
 });
 </script>
 
 <style scoped>
-/*  页面容器样式 */
 .page-content {
-  padding: clamp(1rem, 4vw, 2rem);
-  background-color: #DAE0E6;
-  min-height: 100vh;
+  padding: 40px;
+  min-height: 40%;
+  font-family: 'Segoe UI', sans-serif;
+  background: #ffffff;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
   display: flex;
   flex-direction: column;
   gap: 1rem;
   box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-right: 1.5px solid rgba(0, 0, 0, 0.4);
 }
-/* 图表容器样式 */
-.chart-container {
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
-/* 图表容器 */
 .charts-wrapper {
+  min-height: 40%;
   display: flex;
   gap: 1.25rem;
-  padding: 0 1.25rem 1.25rem;
   height: 25rem;
-  transition: height 0.3s ease;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
-/* 图表容器内部样式 */
 .chart {
-  height: 100%;
-  width: 33.33%;
-  background: #f9f9f9;
-  border-radius: 0.5rem;
+  background: #fff !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px 0 rgba(31,38,135,0.08);
   padding: 0.625rem;
   box-sizing: border-box;
-}
-/* 地图外层包裹，便于绝对定位 */
-.map-container-wrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  min-height: 0;
-  margin-bottom: 4rem;
+  height: 100%;
+  width: 33.33%;
 }
 /* 地图样式 */
 .map-container {
-  flex: 1;
-  min-height: 30vh;
   width: 100%;
+  min-height: 900px;
   border-radius: 0.625rem;
-  overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.397);
-}
-/* 左上角信息窗口固定样式 */
-.map-info-window-fixed {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 20;
-}
-/* 左下角上浮按钮固定样式 */
-.map-up-btn-fixed {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
-  z-index: 20;
-}
-.button {
-  padding: 8px 16px;
-  background-color: #2181ff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-.button:hover {
-  background-color: #0d6efd;
+  /* 优化触摸和滚动性能 */
+  touch-action: manipulation;
+  will-change: transform;
 }
 
 .chart-title {
@@ -559,50 +597,32 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-.time-switch button {
-  padding: 4px 12px;
-  border: 1px solid #DAE0E6;
-  background: #fff;
-  border-radius: 4px;
+.chart-switch-btn, button {
+  background: #e8e8e8;
+  color: #090909;
+  border-radius: 0.5em;
+  border: 1px solid #e8e8e8;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+  transition: all 0.3s;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
+}
+.chart-switch-btn:active, button:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
 }
 
-.time-switch button.active {
-  background: #DAE0E6;
-  color: #000;
+.chart-switch-btn:last-child {
+  margin-right: 0;
+}
+
+.chart-switch-btn.active {
+  background: #205d99;
+  color: #fff;
+  border-color: #205d99;
 }
 
 .chart-content {
   height: calc(100% - 40px);
-}
-
-.loading-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #DAE0E6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 1024px) {
@@ -633,44 +653,16 @@ onUnmounted(() => {
     min-height: 12rem;
     padding: 0.25rem;
   }
-  .map-container-wrapper {
-    margin-bottom: 1rem;
-  }
 }
 
 .violation-type-switch {
   display: flex;
   gap: 8px;
 }
-.violation-type-switch button {
-  padding: 4px 12px;
-  border: 1px solid #DAE0E6;
-  background: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-.violation-type-switch button.active {
-  background: #DAE0E6;
-  color: #000;
-}
 
-/* 地图信息框关闭按钮样式 */
-.amap-info-close {
-  color: #000000;
-  top: 8px;
-  right: 8px;
-  width: 18px;
-  height: 18px;
-  font-size: 16px;
-  line-height: 18px;
-  text-align: center;
-  border-radius: 50%;
-}
-
-.amap-info-close:hover {
-  color: #f0f2ff;
-  background: rgba(255, 255, 255, 0.1);
+.card-style {
+  background: #fff !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px 0 rgba(31,38,135,0.08);
 }
 </style>
