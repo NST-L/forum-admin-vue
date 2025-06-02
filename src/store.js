@@ -2,7 +2,8 @@ import { reactive, readonly } from 'vue';
 
 const storeData = reactive({
   token: localStorage.getItem('token') || '',
-  username: localStorage.getItem('username') || '' // 新增用户名存储字段
+  username: localStorage.getItem('username') || '',
+  userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}')
 });
 
 export default {
@@ -10,19 +11,24 @@ export default {
     return readonly({
       loggedIn: !!storeData.token,
       token: storeData.token,
-      username: storeData.username // 暴露用户名到状态
+      username: storeData.username,
+      userInfo: storeData.userInfo
     });
   },
-  login(token, username) { // 修改登录方法接收用户名
+  login(token, username, userInfo = {}) {
     storeData.token = token;
     storeData.username = username;
+    storeData.userInfo = userInfo;
     localStorage.setItem('token', token);
-    localStorage.setItem('username', username); // 持久化存储用户名
+    localStorage.setItem('username', username);
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
   },
   logout() {
     storeData.token = '';
-    storeData.username = ''; // 清除用户名
+    storeData.username = '';
+    storeData.userInfo = {};
     localStorage.removeItem('token');
-    localStorage.removeItem('username'); // 移除存储的用户名
+    localStorage.removeItem('username');
+    localStorage.removeItem('userInfo');
   }
 };

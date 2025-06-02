@@ -91,15 +91,18 @@
   background: #fff;
   color: #000000;
   box-sizing: border-box;
-  position: relative;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
   border-right: 1px solid #DAE0E6;
   transition: width 0.3s ease;
   will-change: width;
   transform: translateZ(0);
-  height: 100%;
-  min-height: 0;
+  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  z-index: 10;
 }
 
 .collapsed {
